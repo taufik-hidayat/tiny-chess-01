@@ -13,22 +13,19 @@ engine in 4 KB of Python). One file, `main.py`, standard library only.
 - **Quiescence:** captures and promotions, all legal moves when in check;
   stand-pat otherwise.
 - **Move ordering:** transposition-table move, MVV-LVA captures, promotions,
-  two killer moves per ply, history heuristic (quiet moves ordered by a
-  16K-entry table of past beta-cutoff bonuses).
+  two killer moves per ply, history heuristic.
 - **Transposition table:** keyed by Zobrist hash, stores depth / score /
   bound flag / best move; mate scores adjusted by ply.
 - **Evaluation:** material (pawn 100, knight 320, bishop 330, rook 500,
-  queen 900) + piece-square tables (pawn advance/centre, knight/bishop/rook/
-  queen centrality, king centralisation) + bishop-pair bonus (+30) +
+  queen 900) + piece-square tables + bishop-pair bonus (+30) +
   king middlegame/endgame interpolation. Repetition and the 50-move rule
   score 0 inside the search.
 - **Driver:** speaks the make.fun env protocol (`MAKEFUN_ENV_URL`),
   plays UCI moves, replays the game history to rebuild repetition state,
   never resigns, falls back to the first legal move if needed.
 
-Because the source is packed as an lzma + base85 payload to fit the
-4,096-byte limit, the readable source is developed and tested separately
-and then packed; the packed `main.py` is byte-identical in behaviour.
+The readable source is developed and tested separately, then packed as an
+lzma + base85 payload; the packed `main.py` behaves identically.
 
 ## Verification
 
@@ -52,26 +49,15 @@ up to 2,000,000 nodes per move):
 - **Average Elo: 1,054**
 
 Honest note: this is **below the 1,154 Elo floor** required to qualify for
-the final set. The engine beats the depth-2/3/4 anchors and loses to the
-high-node anchors; the 4 KB size cap is the binding constraint, not the
-search design. The entry is submitted as-is: a correct, deterministic,
-well-tested engine that plays legal chess at the strongest level we could
-fit into 4,096 bytes.
+the final set — the 4 KB size cap is the binding constraint, not the search
+design. The entry is submitted as-is: a correct, deterministic engine that
+plays legal chess at the strongest level we could fit into 4,096 bytes.
 
 Note: the packed `main.py` is 4,088 bytes, 8 bytes under the 4,096-byte
 limit, so the engine fits the size rule with a small margin.
 
 ## Running locally
 
-The engine reads `MAKEFUN_ENV_URL` and plays the env protocol, e.g. with
-the kit's practice harness:
-
 ```
 MAKEFUN_ENV_URL=http://127.0.0.1:<port> python3 main.py
-```
-
-Or grade it with the kit (requires Docker):
-
-```
-node cli/makefun.mjs grade-local --kit . --bot <repo> --driver docker
 ```
